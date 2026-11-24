@@ -773,7 +773,7 @@ function erstelleZusatzsymbole(temperatur, windgeschwindigkeit, regenwahrscheinl
 
 function zeigeWetter(wetterdaten) {
     speichereStadtOffline(aktuellerOrt, wetterdaten);
-
+    zeigeRegenprognose(wetterdaten);
  
 
     localStorage.setItem(
@@ -807,6 +807,7 @@ const gefuehlteTemperatur = wetterdaten.current.apparent_temperature;
 const luftfeuchtigkeit = wetterdaten.current.relative_humidity_2m;
 
 const wettercode = wetterdaten.current.weather_code;
+aktualisiereWetterHintergrund(wettercode);
 
 const windgeschwindigkeit = wetterdaten.current.wind_speed_10m;
 
@@ -836,6 +837,16 @@ console.log("Windgeschwindigkeit:", windgeschwindigkeit);
 
 console.log("Regenwahrscheinlichkeit:", regenwahrscheinlichkeit);
 
+if (regenwahrscheinlichkeit !== null) {
+    zeigeAktivitaeten(
+        temperatur,
+        windgeschwindigkeit,
+        regenwahrscheinlichkeit
+    );
+} else {
+    document.getElementById("aktivitaeten-liste").textContent =
+        "Aktuell keine Regenwahrscheinlichkeit verfügbar.";
+}
  
 
 let kleidung = "";
@@ -2069,5 +2080,172 @@ function sucheStadtOffline(name) {
             "Diese Stadt ist noch nicht offline gespeichert. " +
             "Suche sie zuerst einmal mit Internet."
         );
+    }
+}
+
+/* AKTIVITÄTEN-CHECK */
+
+function zeigeAktivitaeten(temperatur, wind, regen) {
+
+    const container = document.getElementById("aktivitaeten-liste");
+
+    if (!container) return;
+
+    const aktivitaeten = [
+        {
+            name: "🚶 Spazierengehen",
+            gut: temperatur >= 5 && temperatur <= 27 && wind < 30 && regen < 30,
+            mittel: temperatur >= 0 && wind < 45 && regen < 60
+        },
+        {
+            name: "🏃 Joggen",
+            gut: temperatur >= 5 && temperatur <= 22 && wind < 25 && regen < 30,
+            mittel: temperatur >= 0 && temperatur <= 28 && wind < 40 && regen < 60
+        },
+        {
+            name: "🚴 Fahrradfahren",
+            gut: temperatur >= 10 && temperatur <= 28 && wind < 20 && regen < 20,
+            mittel: temperatur >= 5 && wind < 35 && regen < 50
+        },
+        {
+            name: "🧺 Picknick",
+            gut: temperatur >= 18 && temperatur <= 30 && wind < 20 && regen < 20,
+            mittel: temperatur >= 15 && wind < 30 && regen < 40
+        }
+    ];
+
+    container.innerHTML = "";
+
+    aktivitaeten.forEach(function (aktivitaet) {
+
+        let bewertung;
+        let klasse;
+
+        if (aktivitaet.gut) {
+            bewertung = "✅ Gut geeignet";
+            klasse = "gut";
+        } else if (aktivitaet.mittel) {
+            bewertung = "🟡 Bedingt geeignet";
+            klasse = "mittel";
+        } else {
+            bewertung = "🔴 Eher ungeeignet";
+            klasse = "schlecht";
+        }
+
+        const karte = document.createElement("div");
+        karte.className = "aktivitaet";
+
+        karte.innerHTML = `
+            <h3>${aktivitaet.name}</h3>
+            <p class="bewertung ${klasse}">${bewertung}</p>
+        `;
+
+        container.appendChild(karte);
+    });
+}
+
+/* REGENPROGNOSE */
+
+function zeigeRegenprognose(wetterdaten) {
+    const container = document.getElementById("regen-stunden");
+    const tipp = document.getElementById("regen-tipp");
+
+    const zeiten = wetterdaten.hourly.time;
+    const regen = wetterdaten.hourly.precipitation_probability;
+
+    // Aktuelle Stunde suchen
+    const aktuelleZeit = wetterdaten.current.time.slice(0, 13);
+
+    const startIndex = zeiten.findIndex(function (zeit) {
+        return zeit.slice(0, 13) === aktuelleZeit;
+    });
+
+    container.innerHTML = "";
+
+    if (startIndex === -1) {
+        tipp.textContent = "Keine Regenprognose verfügbar.";
+        return;
+    }
+
+    const stunden = [];
+
+    // Nächste vier Stunden anzeigen
+    for (let i = startIndex; i < Math.min(startIndex + 4, zeiten.length); i++) {
+        const uhrzeit = zeiten[i].split("T")[1].slice(0, 5);
+        const wahrscheinlichkeit = regen[i];
+
+        const karte = document.createElement("div");
+        karte.className = "regen-stunde";
+
+        const anzeige = wahrscheinlichkeit === null
+            ? "--"
+            : wahrscheinlichkeit + "%";
+
+        karte.innerHTML = `
+            <span>${uhrzeit} Uhr</span>
+            <strong>${anzeige}</strong>
+        `;
+
+        container.appendChild(karte);
+
+        stunden.push({
+            zeit: uhrzeit,
+            regen: wahrscheinlichkeit
+        });
+    }
+
+    const hoheWahrscheinlichkeit = stunden.find(function (stunde) {
+        return stunde.regen !== null && stunde.regen >= 60;
+    });
+
+    const mittlereWahrscheinlichkeit = stunden.some(function (stunde) {
+        return stunde.regen !== null && stunde.regen >= 30;
+    });
+
+    if (hoheWahrscheinlichkeit) {
+        tipp.textContent =
+            "☔ Ab " + hoheWahrscheinlichkeit.zeit +
+            " Uhr ist die Regenwahrscheinlichkeit erhöht. " +
+            "Nimm am besten einen Regenschirm mit!";
+    } else if (mittlereWahrscheinlichkeit) {
+        tipp.textContent =
+            "🌦️ Es könnte in den nächsten Stunden regnen. " +
+            "Ein Regenschirm könnte sinnvoll sein.";
+    } else if (stunden.some(stunde => stunde.regen !== null)) {
+        tipp.textContent =
+            "☀️ Die Regenwahrscheinlichkeit ist in den nächsten Stunden gering.";
+    } else {
+        tipp.textContent = "Keine Regenwahrscheinlichkeit verfügbar.";
+    }
+}
+
+/* DYNAMISCHER WETTER-HINTERGRUND */
+
+function aktualisiereWetterHintergrund(wettercode) {
+
+    const wetterkarte = document.querySelector(".wetterkarte");
+
+    wetterkarte.classList.remove(
+        "wetter-sonne",
+        "wetter-wolken",
+        "wetter-regen",
+        "wetter-schnee",
+        "wetter-gewitter"
+    );
+
+    if (wettercode === 0 || wettercode === 1) {
+        wetterkarte.classList.add("wetter-sonne");
+
+    } else if ([2, 3, 45, 48].includes(wettercode)) {
+        wetterkarte.classList.add("wetter-wolken");
+
+    } else if ([51, 53, 55, 56, 57, 61, 63, 65, 66, 67, 80, 81, 82].includes(wettercode)) {
+        wetterkarte.classList.add("wetter-regen");
+
+    } else if ([71, 73, 75, 77, 85, 86].includes(wettercode)) {
+        wetterkarte.classList.add("wetter-schnee");
+
+    } else if ([95, 96, 97, 99].includes(wettercode)) {
+        wetterkarte.classList.add("wetter-gewitter");
     }
 }

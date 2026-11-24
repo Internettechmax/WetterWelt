@@ -1,302 +1,180 @@
-<!DOCTYPE html>
 
+<!DOCTYPE html>
 <html lang="de">
 
 <head>
-
     <meta charset="UTF-8">
-
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
     <meta name="description" content="WetterWelt zeigt das aktuelle Wetter und die Wettervorhersage für deine Stadt.">
-
- 
 
     <title>WetterWelt - Dein Wetter auf einen Blick</title>
 
- 
-
     <link rel="stylesheet" href="style.css">
-
     <link rel="manifest" href="manifest.json">
-
     <link rel="icon" type="image/png" href="favicon/image.png">
 
- 
-
     <script src="chart.umd.js"></script>
-
     <script src="script.js" defer></script>
-
 </head>
-
- 
 
 <body>
 
- 
-
     <header class="header">
-
         <div class="logo-bereich">
-
-           
-<img src="favicon/image.png" alt="WetterWelt Logo">
-
-
+            <img src="favicon/image.png" alt="WetterWelt Logo">
             <span>WetterWelt</span>
-
         </div>
 
- 
+        <div class="header-rechts">
+            <p>Dein Wetter auf einen Blick.</p>
 
-       
-<div class="header-rechts">
-    <p>Dein Wetter auf einen Blick.</p>
-
-    <button id="theme-toggle" class="theme-toggle"
-            type="button" aria-label="Dunkelmodus aktivieren">
-        🌙
-    </button>
-</div>
-
-
+            <button id="theme-toggle" class="theme-toggle"
+                    type="button" aria-label="Dunkelmodus aktivieren">
+                🌙
+            </button>
+        </div>
     </header>
-
- 
 
     <main>
 
- 
-
+        <!-- Einleitung -->
         <section class="einleitung">
-
             <p class="bereich-label">WILLKOMMEN BEI WETTERWELT</p>
-
             <h1>Wetter heute</h1>
-
             <p>Entdecke das aktuelle Wetter und deine persönliche Vorhersage.</p>
-
         </section>
 
- 
-
+        <!-- Städtesuche -->
         <section class="suche">
-
             <div class="suchfeld">
-
                 <span class="suchsymbol">⌕</span>
 
- 
-
                 <input
-
                     type="text"
-
                     id="stadt-suche"
-
                     placeholder="Stadt oder Ort suchen..."
-
                     aria-label="Stadt oder Ort suchen"
-
                 >
 
- 
-
                 <button id="suchen-button">Suchen</button>
-
             </div>
-
- 
 
             <button id="standort-button" class="standort-button">
-
                 <span>⌖</span>
-
                 Meinen Standort verwenden
-
             </button>
-
         </section>
 
- 
-
+        <!-- Aktuelles Wetter -->
         <section class="wetterkarte">
 
- 
-
             <div class="wetter-kopf">
-
                 <div class="standort-info">
-
                     <p class="karten-label">AKTUELLER STANDORT</p>
-
                     <h2 id="stadt-anzeige">...</h2>
 
- 
-
                     <button id="favorit-hinzufuegen">
-
                         ☆ Als Favorit speichern
-
                     </button>
-
                 </div>
-
- 
 
                 <div class="wetter-symbol-bereich">
-
                     <p class="wetter-symbol" id="wettersymbol">☀️</p>
-
                 </div>
-
             </div>
-
- 
 
             <div class="wetter-hauptwerte">
-
                 <p class="temperatur" id="temperatur">...</p>
-
                 <p class="wetterbeschreibung" id="wetterbeschreibung">
-
                     Wetter wird geladen ...
-
                 </p>
-
             </div>
-
- 
 
             <div class="wetter-details">
-
- 
-
                 <div class="wetter-detail">
-
                     <span>Gefühlte Temperatur</span>
-
                     <strong>
-
                         <span id="gefuehlte-temperatur">--</span> °C
-
                     </strong>
-
                 </div>
-
- 
 
                 <div class="wetter-detail">
-
                     <span>Luftfeuchtigkeit</span>
-
                     <strong>
-
                         <span id="luftfeuchtigkeit">--</span> %
-
                     </strong>
-
                 </div>
-
- 
-
             </div>
-
- 
 
         </section>
 
- 
-
+        <!-- Favoriten -->
         <section class="favoriten-bereich">
-
             <div class="bereich-kopf">
-
                 <p class="bereich-label">DEINE AUSWAHL</p>
-
                 <h2>Meine Lieblingsstädte</h2>
-
             </div>
-
- 
 
             <div id="favoriten-liste"></div>
-
         </section>
 
- 
-
+        <!-- Kleidungsempfehlung -->
         <section class="kleidungsempfehlung">
-
             <div class="bereich-label">PERSÖNLICHER TIPP</div>
-
             <h2>Deine Kleidungsempfehlung</h2>
 
- 
-
             <p id="kleidungstext">
-
                 Deine passende Kleidung wird anhand des aktuellen Wetters ermittelt.
-
             </p>
-
         </section>
 
- 
+        <!-- Regenprognose -->
+        <section class="regen-bereich">
+            <p class="bereich-label">REGENPROGNOSE</p>
+            <h2>Wird es heute noch regnen?</h2>
+            <p>Regenwahrscheinlichkeit für die nächsten Stunden.</p>
 
+            <div id="regen-stunden" class="regen-stunden"></div>
+            <p id="regen-tipp" class="regen-tipp"></p>
+        </section>
+
+        <!-- Aktivitäten-Check -->
+        <section class="aktivitaeten-bereich">
+            <p class="bereich-label">DEIN WETTER-CHECK</p>
+            <h2>Was kannst du heute machen?</h2>
+            <p>Unsere Empfehlungen passend zum aktuellen Wetter.</p>
+
+            <div id="aktivitaeten-liste" class="aktivitaeten-liste">
+            </div>
+        </section>
+
+        <!-- Temperaturdiagramm -->
         <section class="diagramm-bereich">
-
             <div class="bereich-label">WETTER IM TAGESVERLAUF</div>
-
             <h2>Temperaturverlauf</h2>
-
             <p>So entwickelt sich die Temperatur im Laufe des Tages.</p>
 
- 
-
             <div class="diagramm-container">
-
                 <canvas id="temperatur-diagramm"></canvas>
-
             </div>
-
         </section>
 
- 
-
+        <!-- Wettervorhersage -->
         <section class="vorhersage-bereich">
-
             <div class="bereich-label">DIE NÄCHSTEN TAGE</div>
-
             <h2>Wettervorhersage</h2>
 
- 
-
             <div
-
                 class="vorhersage-container"
-
                 id="vorhersage-container"
-
             ></div>
-
         </section>
-
- 
 
     </main>
 
- 
-
     <footer>
-
         <p>WetterWelt · Geodaten © OpenStreetMap-Mitwirkende</p>
-
     </footer>
 
- 
-
 </body>
-
 </html>

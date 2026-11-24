@@ -1,19 +1,19 @@
+
 {
-
-"name": "Meine Wetter-App",
-
-"short-name": "Wetter",
-
-"description": "Deine persönliche Wetter-App mit aktueller Wetterlage und Vorhersage.",
-
-"start_url": "./",
-
-"display": "standalone",
-
-"background_color": "#f0f4f8",
-
-"theme_color": "#2563eb",
-
-"orientation": "portrait"
-
+    "name": "WetterWelt",
+    "short_name": "WetterWelt",
+    "description": "Deine persönliche Wetter-App mit aktueller Wetterlage und Vorhersage.",
+    "start_url": "./",
+    "display": "standalone",
+    "background_color": "#F5F7F8",
+    "theme_color": "#263D52",
+    "orientation": "portrait",
+    "icons": [
+        {
+            "src": "./favicon/image.png",
+            "sizes": "any",
+            "type": "image/png",
+            "purpose": "any"
+        }
+    ]
 }
