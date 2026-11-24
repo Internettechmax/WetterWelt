@@ -1,24 +1,16 @@
-const CACHE_NAME = "wetterwelt-v4";
 
- 
+const CACHE_NAME = "wetterwelt-v5";
 
 const DATEIEN = [
-
     "./",
-
     "./index.html",
-
     "./style.css",
-
     "./script.js",
-
     "./manifest.json",
-
     "./chart.umd.js",
-
-    "./favicon/favicon.png"
-
-];self.addEventListener("install", function (event) {
+    "./favicon/image.png"
+];
+self.addEventListener("install", function (event) {
 
     event.waitUntil(
 
