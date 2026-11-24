@@ -92,7 +92,10 @@ function zeigeFavoriten() {
 
  
 
-function ladeWetterfuerOrt(ort) {
+function ladeWetterfuerOrt(ort) { if (!navigator.onLine) {
+    sucheStadtOffline(ort.name);
+    return;
+}
 
     aktuellerOrt = ort;
 
@@ -769,6 +772,7 @@ function erstelleZusatzsymbole(temperatur, windgeschwindigkeit, regenwahrscheinl
  
 
 function zeigeWetter(wetterdaten) {
+    speichereStadtOffline(aktuellerOrt, wetterdaten);
 
  
 
@@ -1611,7 +1615,10 @@ const standortButton = document.getElementById("standort-button");
 
 suchenButton.addEventListener("click", function () {
 
- 
+ if (!navigator.onLine) {
+    sucheStadtOffline(stadtEingabe.value);
+    return;
+}
 
     const stadt = stadtEingabe.value;
 
@@ -2001,4 +2008,66 @@ themeToggle.addEventListener("click", function () {
     localStorage.setItem("theme", istDunkel ? "dark" : "light");
 
     aktualisiereThemeButton();
+
 });
+
+/* OFFLINE-SPEICHER FÜR STÄDTE */
+
+function stadtSchluessel(name) {
+    return name.trim().toLocaleLowerCase("de-DE");
+}
+
+function speichereStadtOffline(ort, wetterdaten) {
+    const staedte = JSON.parse(
+        localStorage.getItem("offlineStaedte") || "{}"
+    );
+
+    const schluessel = stadtSchluessel(ort.name);
+
+    staedte[schluessel] = {
+        ort: ort,
+        wetterdaten: wetterdaten,
+        gespeichertAm: Date.now()
+    };
+
+    // Maximal 15 Städte speichern
+    const namen = Object.keys(staedte);
+
+    if (namen.length > 15) {
+        const aeltesteStadt = namen.sort(
+            (a, b) =>
+                staedte[a].gespeichertAm -
+                staedte[b].gespeichertAm
+        )[0];
+
+        delete staedte[aeltesteStadt];
+    }
+
+    try {
+        localStorage.setItem(
+            "offlineStaedte",
+            JSON.stringify(staedte)
+        );
+    } catch (fehler) {
+        console.warn("Offline-Speicher voll:", fehler);
+    }
+}
+
+function sucheStadtOffline(name) {
+    const staedte = JSON.parse(
+        localStorage.getItem("offlineStaedte") || "{}"
+    );
+
+    const schluessel = stadtSchluessel(name);
+    const eintrag = staedte[schluessel];
+
+    if (eintrag) {
+        aktuellerOrt = eintrag.ort;
+        zeigeWetter(eintrag.wetterdaten);
+    } else {
+        alert(
+            "Diese Stadt ist noch nicht offline gespeichert. " +
+            "Suche sie zuerst einmal mit Internet."
+        );
+    }
+}

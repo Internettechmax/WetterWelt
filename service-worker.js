@@ -1,5 +1,5 @@
 
-const CACHE_NAME = "wetterwelt-v5";
+const CACHE_NAME = "wetterwelt-v6";
 
 const DATEIEN = [
     "./",
